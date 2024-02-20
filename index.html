@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détection de Logo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0A192F;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #CAF0F8;
+        }
+        button {
+            background-color: #0077B6;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #023E8A;
+        }
+        #image-preview img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+        #prediction-result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #023E8A;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Détection de Logo</h1>
+    <input type="file" id="image-input" accept="image/*">
+    <button onclick="loadImage()">Charger l'image</button>
+    <div id="image-preview"></div>
+    <div id="prediction-result"></div>
+
+    <script>
+        async function loadImage() {
+            const input = document.getElementById('image-input');
+            const preview = document.getElementById('image-preview');
+            const resultDiv = document.getElementById('prediction-result');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = async function (e) {
+                    preview.innerHTML = '<img src="' + e.target.result + '" alt="Image chargée">';
+
+                    const formData = new FormData();
+                    formData.append('logoImage', input.files[0]);
+
+                    try {
+                        const response = await fetch('/analyse-logo', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await response.json();
+                        resultDiv.innerHTML = `La prédiction du modèle est : ${data.logoPrediction}`;
+                    } catch (error) {
+                        console.error('Erreur lors de la requête:', error);
+                        resultDiv.innerHTML = 'Erreur lors de la requête';
+                    }
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.innerHTML = "Aucune image sélectionnée";
+                preview.style.color = "#FFFFFF";
+            }
+        }
+    </script>
+</body>
+</html>
